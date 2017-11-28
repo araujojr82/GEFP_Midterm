@@ -10,31 +10,27 @@ class cGarbage : public iGameObject
 public:
 	cGarbage();
 	virtual ~cGarbage();		// Make this virtual, too
-	int size;
-	float topSpeed;
-	float fuel;
 
-	//virtual void FlyAround( void );
-	virtual void ShootWeapons( void );
+	virtual void MoveTo( glm::vec3 targetPosition );
+	virtual void Update( void );
 
 	virtual void SetPosition( glm::vec3 newPos );
 	virtual void SetVelocity( glm::vec3 newVel );
 	virtual void SetRotation( glm::vec3 newRot );
-	virtual glm::vec3 GetPosition( void );
+	virtual void SetName( std::string newName );
+	virtual void SetType( std::string newType );
 
-	virtual std::string getName( void );
-	virtual void setName( std::string newName );
+	virtual glm::vec3 GetPosition( void );
+	virtual std::string GetName( void );
+	virtual std::string GetType( void );
 
 	// NOTE: I'm passing iMediator NOT the full factory
 	virtual void SetMediator( iMediator* pMediator );
 
-	virtual void moveTo( glm::vec3 targetPosition );
-	virtual void update( void );
-
 	cGameObject* pMesh;
 
 private:
-	std::string name;
+	std::string name, type;
 
 	iMediator* m_pTheMediator;
 };

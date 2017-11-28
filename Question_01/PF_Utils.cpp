@@ -33,19 +33,18 @@ void loadObjectsUsingFactory(cFactory* pFactory, std::vector< iGameObject* > vec
 	//pSpaceShip2->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 	//vecObjects.push_back( pSpaceShip2 );
 
-	//for( int index = 0; index != 10; index++ )
-	//{
- //       iGameObject* pCell = pFactory->CreateObject("cell");
-	//	pCell->setName("cell" + std::to_string(index));
-	//	pCell->SetPosition( glm::vec3( generateRandomNumber( -11.0f, 11.0f ), //x
-	//								   generateRandomNumber( -6.0f, 6.0f ), //y
-	//								   0.0f ) );				             //z
+	for( int index = 0; index != 100; index++ )
+	{
+        iGameObject* pGarbage = pFactory->CreateObject("garbage");
+		pGarbage->SetName("garbage" + std::to_string(index));
+		pGarbage->SetType( "plastic" );
+		pGarbage->SetPosition( glm::vec3( generateRandomNumber( -200.0f, 200.0f ),
+										  generateRandomNumber( -200.0f, 200.0f ),
+										  0.0f ) );								  
 
-	//	pCell->SetRotation( glm::vec3( generateRandomNumber( -0.02f, 0.02f ),
-	//								   generateRandomNumber( -0.02f, 0.02f ),
-	//								   generateRandomNumber( -0.02f, 0.02f ) ) );
- //       vecObjects.push_back( pCell );
- //   }
+		pGarbage->SetRotation( glm::vec3( 0.0f ) );
+        vecObjects.push_back( pGarbage );
+    }
 
 	//for( int index = 0; index != 5; index++ )
 	//{

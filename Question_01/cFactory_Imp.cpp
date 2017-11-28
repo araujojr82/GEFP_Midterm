@@ -17,16 +17,15 @@ iGameObject* cFactory_Imp::CreateObject(std::string objType)
 	//	pTheObject = new cGarbage();		// Abstract Factory
 	//	this->AssembleObject( pTheObject, objType );
 	//}
-	if( objType == "fighter" )
+	if( objType == "garbage" )
 	{
 		pTheObject = new cGarbage();
 		cGameObject* pTempGO = new cGameObject();
-		pTempGO->scale = 2.0f;
-		pTempGO->diffuseColour = glm::vec4( 0.5f, 0.5f, 0.5f, 1.0f );
-		pTempGO->meshName = "fighter";
+		pTempGO->scale = 5.0f;
+		//pTempGO->diffuseColour = glm::vec4( 0.5f, 0.5f, 0.5f, 1.0f );
+		//pTempGO->meshName = "fighter";
 		pTempGO->typeOfObject = eTypeOfObject::UNKNOWN;
-		pTempGO->bIsUpdatedInPhysics = true;
-		//pTempGO->bIsWireFrame = true;
+		pTempGO->bIsUpdatedInPhysics = false;
 		::g_vecGameObjects.push_back( pTempGO );
 		cGarbage* pS = ( cGarbage* )pTheObject;
 		pS->pMesh = pTempGO;
@@ -145,7 +144,7 @@ void cFactory_Imp::UpdateAllObjects(double timestep)
         //{ // It's a virus!
         //pCurObj->moveTo( FindClosestObjByType( "cell", pCurObj->GetPosition() )->GetPosition() );
         //}
-        pCurObj->update();
+        pCurObj->Update();
 
 
         // For "fly around" (or anything tied with the physics),
@@ -208,7 +207,7 @@ iGameObject* cFactory_Imp::FindObjByName(std::string name)
     for (int index = 0; index != this->vec_pObjects.size(); index++)
     {
         iGameObject* pCurrentObj = this->vec_pObjects[index];
-        if (pCurrentObj->getName() == name)
+        if (pCurrentObj->GetName() == name)
         {
             return pCurrentObj;
         }
@@ -227,7 +226,7 @@ iGameObject* cFactory_Imp::FindClosestObjByType(std::string objType, glm::vec3 f
 	for( int index = 0; index != this->vec_pObjects.size(); index++ )
 	{
 		nearestObj = this->vec_pObjects[index];
-		if( strncmp( nearestObj->getName().c_str(), objType.c_str(), 4 ) == 0 )
+		if( strncmp( nearestObj->GetName().c_str(), objType.c_str(), 4 ) == 0 )
 		{
 			exit;
 		}
@@ -237,7 +236,7 @@ iGameObject* cFactory_Imp::FindClosestObjByType(std::string objType, glm::vec3 f
 	for( int index = 0; index != this->vec_pObjects.size(); index++ )
 	{
 		iGameObject* pCurrentObj = this->vec_pObjects[index];
-		if( strncmp( pCurrentObj->getName().c_str(), objType.c_str(), 4 ) == 0 )
+		if( strncmp( pCurrentObj->GetName().c_str(), objType.c_str(), 4 ) == 0 )
 		{	// Only compare distance to objects of target type
 
 			targetPos = pCurrentObj->GetPosition();

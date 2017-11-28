@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp>			// glm::value_ptr
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,6 +34,7 @@
 
 #include "cFactory.h"
 
+float angle = 0.0f;
 
 // Euclides: Control selected object for movement
 int g_GameObjNumber = 0;				// game object vector position number 
@@ -51,7 +54,7 @@ cFactory* g_pFactory = NULL;
 std::vector< iGameObject* > g_vecObjects;
 
 
-glm::vec3 g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 20.0f );	// 5 units "down" z
+glm::vec3 g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );	// 5 units "down" z
 glm::vec3 g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 
 // TODO include camera new code
@@ -161,36 +164,28 @@ static void key_callback( GLFWwindow* window, int key, int scancode, int action,
 	}
 
 	// Change Camera Velocity
+	const float CAMERAMOVEMENT = 5.0f;
 	switch( key )
 	{
 	case GLFW_KEY_UP:		// Up arrow
-		//::g_vecGameObjects[g_GameObjNumber]->position.y += 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.y += 0.10f;
 		break;
 	case GLFW_KEY_DOWN:		// Down arrow
-		//::g_vecGameObjects[g_GameObjNumber]->position.y -= 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.y -= 0.10f;
 		break;
 	case GLFW_KEY_LEFT:		// Left arrow
-		//::g_vecGameObjects[g_GameObjNumber]->position.x -= 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.x -= 0.10f;
 		break;
 	case GLFW_KEY_RIGHT:	// Right arrow
-		//::g_vecGameObjects[g_GameObjNumber]->position.x += 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.x += 0.10f;
 		break;
-	case GLFW_KEY_LEFT_BRACKET:		// [{ key
-		//::g_vecGameObjects[g_GameObjNumber]->position.z += 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.z += 0.10f;
-		break;
-	case GLFW_KEY_RIGHT_BRACKET:		// ]} key
-		//::g_vecGameObjects[g_GameObjNumber]->position.z -= 0.10f;
-		::g_pLightManager->vecLights[g_LightObjNumber].position.z -= 0.10f;
-		break;
+	//case GLFW_KEY_LEFT_BRACKET:		// [{ key
+	//	//::g_vecGameObjects[g_GameObjNumber]->position.z += 0.10f;
+	//	::g_pLightManager->vecLights[g_LightObjNumber].position.z += 0.10f;
+	//	break;
+	//case GLFW_KEY_RIGHT_BRACKET:		// ]} key
+	//	//::g_vecGameObjects[g_GameObjNumber]->position.z -= 0.10f;
+	//	::g_pLightManager->vecLights[g_LightObjNumber].position.z -= 0.10f;
+	//	break;
 	}
 
 	// Change Camera Position
-	const float CAMERAMOVEMENT = 0.1f;
 	switch( key )
 	{
 	case GLFW_KEY_A:		// Left
@@ -246,31 +241,31 @@ static void key_callback( GLFWwindow* window, int key, int scancode, int action,
 	switch ( key )
 	{
 	case GLFW_KEY_1:
-		g_LightObjNumber = 0; 
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );
 		break;
 	case GLFW_KEY_2:
-		g_LightObjNumber = 1;
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 700.0f );
 		break;
 	case GLFW_KEY_3:
-		g_LightObjNumber = 2;
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 1800.0f );
 		break;
 	case GLFW_KEY_4:
-		g_LightObjNumber = 3;
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 3455.0f );
 		break;
 	case GLFW_KEY_5:
-		g_LightObjNumber = 4;
+		g_cameraXYZ = glm::vec3( 0.0f, -455.0f, 220.0f );
 		break;
 	case GLFW_KEY_6:
-		g_LightObjNumber = 5;
+		g_cameraXYZ = glm::vec3( 0.0f, -1600.0f, 400.0f );
 		break;
 	case GLFW_KEY_7:
-		g_LightObjNumber = 6;
+		
 		break;
 	case GLFW_KEY_8:
-		g_LightObjNumber = 7;
+		
 		break;
 	case GLFW_KEY_9:
-		g_LightObjNumber = 8;
+		
 		break;
 	}
 
@@ -380,8 +375,8 @@ int main( void )
 	::g_pLightManager->LoadShaderUniformLocations( currentProgID );
 
 	// Change ZERO (the SUN) light position
-	::g_pLightManager->vecLights[0].position = glm::vec3( 0.0f, 0.0f, 50.0f );
-	::g_pLightManager->vecLights[0].attenuation.y = 0.04f;		// Change the linear attenuation
+	::g_pLightManager->vecLights[0].position = glm::vec3( 0.0f, 0.0f, 500.0f );
+	::g_pLightManager->vecLights[0].attenuation.y = 0.0007f;		// Change the linear attenuation
 
 	loadLightObjects();
 
@@ -511,10 +506,9 @@ int main( void )
 			// View or "camera" matrix
 			glm::mat4 v = glm::mat4( 1.0f );	// identity
 
-			v = glm::lookAt( g_cameraXYZ,			// "eye" or "camera" position
-				g_cameraTarget_XYZ,					// "At" or "target"							 
-				//glm::vec3( 0.0f, 1.0f, 0.0f ) );	// "up" vector
-				glm::vec3( 0.0f, 1.0f, 0.0f ) );	// "up" vector
+			v = glm::lookAt( g_cameraXYZ,						// "eye" or "camera" position
+							 g_cameraTarget_XYZ,				// "At" or "target"							 
+							 glm::vec3( 0.0f, 1.0f, 0.0f ) );	// "up" vector
 
 			//mat4x4_mul(mvp, p, m);
 			mvp = p * v * m;			// This way (sort of backwards)
