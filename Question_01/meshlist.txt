@@ -1,0 +1,6 @@
+world      ../models/worldXY_2200x2200_xyz.ply
+robot      ../models/robot_R2_1unit_xyz.ply
+alum_can   ../models/alum_can_1unit_xyz.ply
+elect_tv   ../models/eletronic_TV_1unit_xyz.ply
+plast_lego ../models/plastic_lego_1unit_xyz.ply
+steel_can  ../models/steel_can_1unit_xyz.ply
