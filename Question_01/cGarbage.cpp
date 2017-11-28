@@ -4,13 +4,13 @@
 cGarbage::cGarbage()
 {
 	//this->size = 1;
-	std::cout << "cGarbage::cGarbage() is called" << std::endl;
+	//std::cout << "cGarbage::cGarbage() is called" << std::endl;
 	return;
 }
 
 cGarbage::~cGarbage()
 {
-	std::cout << "cGarbage::~cGarbage() is called" << std::endl;
+	//std::cout << "cGarbage::~cGarbage() is called" << std::endl;
 	return;
 }
 

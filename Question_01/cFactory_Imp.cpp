@@ -21,7 +21,7 @@ iGameObject* cFactory_Imp::CreateObject(std::string objType)
 	{
 		pTheObject = new cGarbage();
 		cGameObject* pTempGO = new cGameObject();
-		pTempGO->scale = 5.0f;
+		pTempGO->scale = 10.0f;
 		//pTempGO->diffuseColour = glm::vec4( 0.5f, 0.5f, 0.5f, 1.0f );
 		//pTempGO->meshName = "fighter";
 		pTempGO->typeOfObject = eTypeOfObject::UNKNOWN;
@@ -132,7 +132,7 @@ void cFactory_Imp::AssembleObject(iGameObject* pTheObject, std::string objType)
 //iShip* FindShipByID( unsigned int uniqueID );
 //iShip* FindShipByName( std::string name );
 
-void cFactory_Imp::UpdateAllObjects(double timestep)
+void cFactory_Imp::UpdateAllObjects(double currTime, double timestep)
 {
     // **************************************************
     // Ship behaviour update step

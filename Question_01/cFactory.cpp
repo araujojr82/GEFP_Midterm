@@ -32,9 +32,9 @@ void cFactory::AssembleObject( iGameObject* pTheObject, std::string objType )
     this->pImp->AssembleObject(pTheObject, objType);
 }
 
-void cFactory::UpdateAllObjects( double timestep )
+void cFactory::UpdateAllObjects( double currTime, double timestep )
 {
-    this->pImp->UpdateAllObjects(timestep);
+    this->pImp->UpdateAllObjects(currTime, timestep);
 }
 
 std::vector<std::string> cFactory::Mediate( std::string objType, std::string targetObj, std::vector<std::string> parameters )

@@ -1,4 +1,4 @@
-world      ../models/worldXY_2200x2200_xyz.ply
+world      ../models/worldXY_4400x4400_xyz.ply
 robot      ../models/robot_R2_1unit_xyz.ply
 alum_can   ../models/alum_can_1unit_xyz.ply
 elect_tv   ../models/eletronic_TV_1unit_xyz.ply

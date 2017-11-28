@@ -30,7 +30,7 @@ public:
     virtual iGameObject* FindClosestObjByType(std::string objType, glm::vec3 fromPos);
     virtual std::vector<std::string> Mediate( std::string objType, std::string targetObj, std::vector<std::string> parameters);
 
-    void UpdateAllObjects(double timestep);
+	void UpdateAllObjects(double currTime, double timestep);
 
 private:
 

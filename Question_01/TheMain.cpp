@@ -34,8 +34,6 @@
 
 #include "cFactory.h"
 
-float angle = 0.0f;
-
 // Euclides: Control selected object for movement
 int g_GameObjNumber = 0;				// game object vector position number 
 int g_LightObjNumber = 0;				// light object vector position
@@ -46,6 +44,9 @@ int g_NUMBER_OF_LIGHTS = 1;
 
 bool bIsWireframe = false;
 
+double g_lastDumpTime = 0;
+const float g_DUMP_INTERVAL = 10.0f;
+
 // Remember to #include <vector>...
 std::vector< cGameObject* > g_vecGameObjects;
 
@@ -54,13 +55,12 @@ cFactory* g_pFactory = NULL;
 std::vector< iGameObject* > g_vecObjects;
 
 
-glm::vec3 g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );	// 5 units "down" z
+glm::vec3 g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 5800.0f );;	// 5 units "down" z
 glm::vec3 g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 
 // TODO include camera new code
 
 cVAOMeshManager*	g_pVAOManager = 0;		// or NULL or nullptr
-
 cShaderManager*		g_pShaderManager;		// Heap, new (and delete)
 cLightManager*		g_pLightManager;
 
@@ -72,15 +72,6 @@ public:
 	std::string title = "Graphics 101 is Awesome!";
 };
 
-struct sGOparameters		// for the Game Objects' input file
-{
-	std::string meshname;
-	int nObjects;
-	float x, y, z, scale;
-	std::string random;
-	float rangeX, rangeY, rangeZ, rangeScale;
-};
-
 struct sMeshparameters		// for the Meshes' input file
 {
 	std::string meshname;
@@ -88,9 +79,9 @@ struct sMeshparameters		// for the Meshes' input file
 };
 
 // Forward declare the Functions
+extern void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects );
 extern void loadObjectsUsingFactory(cFactory* pFactory, std::vector< iGameObject* > vecObjects);
 void loadConfigFile( std::string fileName, sWindowConfig& wConfig );
-sGOparameters parseObjLine( std::ifstream &source );
 void loadFixedObjects();
 sMeshparameters parseMeshLine( std::ifstream &source );
 void loadMeshesFile( std::string fileName, GLint ShaderID );
@@ -114,18 +105,6 @@ static void key_callback( GLFWwindow* window, int key, int scancode, int action,
 		if ( bIsWireframe ) bIsWireframe = false;
 		else bIsWireframe = true;
 	}
-
-	//// Change object in g_GameObject
-	//if( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
-	//{
-	//	if( g_GameObjNumber < ( ::g_vecGameObjects.size() - 1 ) ) {
-	//		g_GameObjNumber++;
-	//	}
-	//	else
-	//	{
-	//		g_GameObjNumber = 0;
-	//	}
-	//}
 
 	// Change light colour
 	if( key == GLFW_KEY_C && action == GLFW_PRESS )
@@ -241,31 +220,31 @@ static void key_callback( GLFWwindow* window, int key, int scancode, int action,
 	switch ( key )
 	{
 	case GLFW_KEY_1:
-		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 5800.0f );
 		break;
 	case GLFW_KEY_2:
-		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 700.0f );
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 3455.0f );
 		break;
 	case GLFW_KEY_3:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 1800.0f );
 		break;
 	case GLFW_KEY_4:
-		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 3455.0f );
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 700.0f );
 		break;
 	case GLFW_KEY_5:
-		g_cameraXYZ = glm::vec3( 0.0f, -455.0f, 220.0f );
+		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );
 		break;
 	case GLFW_KEY_6:
 		g_cameraXYZ = glm::vec3( 0.0f, -1600.0f, 400.0f );
 		break;
 	case GLFW_KEY_7:
-		
+		g_cameraXYZ = glm::vec3( 0.0f, -455.0f, 100.0f );
 		break;
 	case GLFW_KEY_8:
-		
+		g_cameraXYZ = glm::vec3( 0.0f, -190.0f, 45.0f );
 		break;
 	case GLFW_KEY_9:
-		
+		g_cameraXYZ = glm::vec3( 0.0f, -110.0f, 30.0f );
 		break;
 	}
 
@@ -375,8 +354,8 @@ int main( void )
 	::g_pLightManager->LoadShaderUniformLocations( currentProgID );
 
 	// Change ZERO (the SUN) light position
-	::g_pLightManager->vecLights[0].position = glm::vec3( 0.0f, 0.0f, 500.0f );
-	::g_pLightManager->vecLights[0].attenuation.y = 0.0007f;		// Change the linear attenuation
+	::g_pLightManager->vecLights[0].position = glm::vec3( 0.0f, 0.0f, 1500.0f );
+	::g_pLightManager->vecLights[0].attenuation.y = 0.00035f;		// Change the linear attenuation
 
 	loadLightObjects();
 
@@ -569,8 +548,18 @@ int main( void )
 		double curTime = glfwGetTime();
 		double deltaTime = curTime - lastTimeStep;
 
-		// Use mediator to update all ships
-		::g_pFactory->UpdateAllObjects( deltaTime );
+		//std::cout << "Time: " << curTime << std::endl;
+		//std::cout << "Delta Time: " << deltaTime << std::endl;
+
+		if( curTime - g_lastDumpTime >= g_DUMP_INTERVAL )
+		{
+			DumpGarbage( g_pFactory, g_vecObjects );
+			g_lastDumpTime = curTime;
+		}
+		
+
+		// Use mediator to update all objects
+		::g_pFactory->UpdateAllObjects( curTime, deltaTime );
 		
 		// Physics Calculation
 		PhysicsStep( deltaTime );
@@ -638,7 +627,6 @@ void loadConfigFile( std::string fileName, sWindowConfig& wConfig )
 // Generate real random numbers
 float generateRandomNumber( float min, float max )
 {
-
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 
 	std::default_random_engine generator( seed );
@@ -653,9 +641,6 @@ float generateRandomNumber( float min, float max )
 
 void loadFixedObjects( )
 {
-	//sGOparameters sGOpar;
-	std::vector <sGOparameters> allObjects;
-
 	// Create a new GO
 	cGameObject* pTempGO = new cGameObject();
 
@@ -676,23 +661,6 @@ void loadFixedObjects( )
 	return;
 }
 
-// Parse the file line to fit into the structure
-sGOparameters parseObjLine( std::ifstream &source ) {
-
-	sGOparameters sGOpar;
-
-	//Scanning a line from the file
-	source >> sGOpar.meshname >> sGOpar.nObjects
-		>> sGOpar.x >> sGOpar.y >> sGOpar.z >> sGOpar.scale
-		>> sGOpar.random
-		>> sGOpar.rangeX >> sGOpar.rangeY >> sGOpar.rangeZ
-		>> sGOpar.rangeScale;
-
-
-	return sGOpar;
-}
-
-//Load objects.txt
 void loadMeshesFile( std::string fileName, GLint ShaderID )
 {
 	std::vector <sMeshparameters> allMeshes;
@@ -823,53 +791,12 @@ void PhysicsStep( double deltaTime )
 					//
 					if ( PenetrationTestSphereSphere( pCurGO, pOtherObject ) )
 					{
-						////std::cout << "Collision!" << std::endl;
-						//pCurGO->diffuseColour = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
-						//pOtherObject->diffuseColour = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+
 					}
 
 					break;
 				}
 			}
-
-			//		switch ( pGO_to_Compare->typeOfObject )
-			//		{
-			//		case eTypeOfObject::SPHERE:
-			//			CalcSphereSphereColision( pCurGO, pGO_to_Compare );
-			//			break;
-			//		case eTypeOfObject::PLANE:
-			//			CalcSpherePlaneColision( pCurGO, pGO_to_Compare );
-			//			break;
-			//		// More if I'd like that.
-			//
-			//		}
-			//	}
-
-			// HACK
-			//const float SURFACEOFGROUND = -2.0f;
-			//const float RIGHTSIDEWALL = 5.0f;
-			//const float LEFTSIDEWALL = -5.0f;
-			// 
-			// Sphere-Plane detection
-
-			//if ( ( pCurGO->position.y - pCurGO->radius ) <= SURFACEOFGROUND )
-			//{	// Object has "hit" the ground
-			//	//pCurGO->diffuseColour = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );
-			//	pCurGO->vel.y = +( fabs( pCurGO->vel.y ) );
-			//}
-
-			//if ( ( pCurGO->position.x + pCurGO->radius ) >= RIGHTSIDEWALL )
-			//{	// Object too far to the right
-			//	// Object has penetrated the right plane
-			//	//pCurGO->diffuseColour = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );
-			//	pCurGO->vel.x = -( fabs( pCurGO->vel.x ) );
-			//}
-			//if ( ( pCurGO->position.x - pCurGO->radius ) <= LEFTSIDEWALL )
-			//{	// Object too far to the left
-			//	// Object has penetrated the left plane
-			//	//pCurGO->diffuseColour = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );
-			//	pCurGO->vel.x = +( fabs( pCurGO->vel.x ) );
-			//}
 			break;
 		};
 
