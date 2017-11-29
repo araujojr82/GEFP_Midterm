@@ -11,7 +11,7 @@ public:
 	cGarbage();
 	virtual ~cGarbage();		// Make this virtual, too
 
-	virtual void Update( void );
+	virtual void Update( double timestep );
 	virtual void Destroy( void );
 	virtual bool IsActive( void );
 

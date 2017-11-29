@@ -11,7 +11,7 @@ public:
 	cRobot();
 	virtual ~cRobot();		// Make this virtual, too
 
-	virtual void Update( void );
+	virtual void Update( double timestep );
 	virtual void Destroy( void );
 	virtual bool IsActive( void );
 
@@ -35,6 +35,7 @@ public:
 	void SeekMaterial();
 	void CheckStorage();
 	void StoreMaterial( std::string materialType, float amount );
+	void ConsumeMaterials( double timestep );
 	void ConsumeMaterial( std::string materialType, float amount );
 	
 	void SetCapacity( std::string materialType, float capacity );

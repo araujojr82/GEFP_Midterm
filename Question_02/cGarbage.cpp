@@ -68,6 +68,8 @@ std::string cGarbage::GetType( void )
 	return this->type;
 }
 
+
+
 void cGarbage::SetType( std::string newType )
 {
 	this->type = newType;
@@ -76,25 +78,25 @@ void cGarbage::SetType( std::string newType )
 	{
 		this->pMesh->meshName = "alum_can";
 		this->pMesh->diffuseColour = glm::vec4( 0.6f, 0.6f, 0.6f, 1.0f );	// Light Grey
-		this->mass = 0.1f;
+		this->SetMass( 0.1f );
 	}
 	else if( newType == "electronics" )
 	{
 		this->pMesh->meshName = "elect_tv";
 		this->pMesh->diffuseColour = glm::vec4( 0.4f, 0.5f, 0.5f, 1.0f );	// Grey
-		this->mass = 0.1f;
+		this->SetMass( 0.1f );
 	}
 	else if( newType == "plastic" )
 	{
 		this->pMesh->meshName = "plast_lego";
 		this->pMesh->diffuseColour = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );	// Green
-		this->mass = 0.5f;
+		this->SetMass( 0.5f );
 	}
 	else if( newType == "steel" )
 	{
 		this->pMesh->meshName = "steel_can";
-		this->pMesh->diffuseColour = glm::vec4( 0.4f, 0.2f, 0.2f, 1.0f );	//Dark Grey
-		this->mass = 0.2f;
+		this->pMesh->diffuseColour = glm::vec4( 0.4f, 0.2f, 0.2f, 1.0f );	//Red Grey
+		this->SetMass( 0.2f );
 	}
 
 	return;
@@ -107,7 +109,7 @@ void cGarbage::SetMediator( iMediator* pMediator )
 	return;
 }
 
-void cGarbage::Update( void )
+void cGarbage::Update( double timestep )
 {
 	return;
 }

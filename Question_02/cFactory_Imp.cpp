@@ -74,7 +74,7 @@ void cFactory_Imp::UpdateAllObjects(double currTime, double timestep)
 
 		if( pCurObj->GetType() == "robot" )
 		{
-			pCurObj->Update();
+			pCurObj->Update( timestep );
 		}
 
     }//for ( int index = 0;
@@ -102,8 +102,9 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 			if( !theGO == NULL )
 			{
 				glm::vec3 theGOPos = theGO->GetPosition();
+				std::string theGOName = theGO->GetName();
 
-				theRobot->GatherObject( theGOPos, theGO->GetName() );
+				theRobot->GatherObject( theGOPos, theGOName );
 
 				vecResult.push_back( std::to_string( theGOPos.x ) );
 				vecResult.push_back( std::to_string( theGOPos.y ) );
@@ -111,12 +112,16 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 
 				return vecResult;
 			}
+
 		}
 		else if( parameters[0] == "ConsumeMaterial" )
 		{
 			cGarbage* theGarbage = ( cGarbage* )this->FindObjByName( parameters[1] );
-			theRobot->StoreMaterial( theGarbage->GetType(), theGarbage->GetMass() );
-			theGarbage->Destroy();
+			if( !theGarbage == NULL )
+			{
+				theRobot->StoreMaterial( theGarbage->GetType(), theGarbage->GetMass() );
+				theGarbage->Destroy();
+			}
 
 			return vecResult;
 		}

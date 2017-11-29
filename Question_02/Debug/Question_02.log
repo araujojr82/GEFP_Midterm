@@ -1,2 +1,6 @@
 ﻿  cRobot.cpp
+c:\users\arauj\documents\fanshawe\exams\gefp_midterm\question_02\crobot.cpp(333): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\arauj\documents\fanshawe\exams\gefp_midterm\question_02\crobot.cpp(338): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\arauj\documents\fanshawe\exams\gefp_midterm\question_02\crobot.cpp(343): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\arauj\documents\fanshawe\exams\gefp_midterm\question_02\crobot.cpp(348): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   Question_02.vcxproj -> C:\Users\arauj\Documents\Fanshawe\Exams\GEFP_Midterm\Debug\Question_02.exe

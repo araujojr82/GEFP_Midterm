@@ -69,7 +69,6 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 		pGarbage->SetName( "garbage" + std::to_string( numberOfDumpedItens ) );
 		pGarbage->SetType( "aluminum" );
 		pGarbage->SetPosition( GetRandomPosition( center, 2000.0f ) );
-
 		pGarbage->SetRotation( glm::vec3( 0.0f ) );
 		vecObjects.push_back( pGarbage );
 	}

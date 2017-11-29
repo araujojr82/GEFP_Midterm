@@ -21,7 +21,7 @@ public:
 	//cGarbage();			// no need for c'tor because there's no data
 	virtual ~iGameObject()  {};		// Make this virtual, too
 
-	virtual void Update( void ) = 0;
+	virtual void Update( double timestep ) = 0;
 	virtual void Destroy( void ) = 0;
 	virtual bool IsActive( void ) = 0;
 

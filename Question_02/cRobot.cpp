@@ -115,11 +115,14 @@ void cRobot::GatherObject( glm::vec3 newTargetPosition, std::string newTargetNam
 		std::vector<std::string> vecParam;
 		std::vector<std::string> vecResult;
 
-		vecParam.push_back( "ConsumeMaterial" );
-		vecParam.push_back( targetName );
+		/*if( targetName != "" )
+		{*/
+			vecParam.push_back( "ConsumeMaterial" );
+			vecParam.push_back( targetName );
 
-		vecResult = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );		
-		
+			vecResult = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+
+		//}
 		targetName = "";
 		targetPosition = ( glm::vec3( 0.0f ) );
 
@@ -144,12 +147,21 @@ void cRobot::MoveTo( glm::vec3 targetPosition )
 	endX = targetPosition.x;
 	endY = targetPosition.y;
 
+	// Basic speed
 	float distance = sqrt( pow( endX - startX, 2 ) + pow( endY - startY, 2 ) );
+	distance = glm::distance( targetPosition, this->GetPosition() );
 	float directionX = ( endX - startX ) / distance;
 	float directionY = ( endY - startY ) / distance;
 
-	directionX *= 50.0f;
-	directionY *= 50.0f;
+	// Calculate a faster speed based on the distance to the object
+	directionX = ( directionX * 10 ) * ( distance ); // *0.8f );
+	directionY = ( directionY * 10 ) * ( distance ); // *0.8f );
+
+	// The speed mininum should be -1.0 or 1.0 for X an Y, or it will be very slow 
+	if( directionX <= 0.0f && directionX >= -10.0f ) directionX = -10.0f;
+	if( directionX >= 0.0f && directionX <= 10.0f ) directionX = 10.0f;
+	if( directionY <= 0.0f && directionY >= -10.0f ) directionY = -10.0f;
+	if( directionY >= 0.0f && directionY <= 10.0f ) directionY = 10.0f;
 
 	this->SetVelocity( glm::vec3( directionX, directionY, 0.0f ) );
 
@@ -168,10 +180,12 @@ bool cRobot::IsActive( void )
 	return this->isActive;
 }
 
-void cRobot::Update( void )
+void cRobot::Update( double timestep )
 {
 	// Update storage levels information
 	this->CheckStorage();
+
+	this->ConsumeMaterials( timestep );
 
 	if( this->IsFull() )
 	{
@@ -204,6 +218,19 @@ bool cRobot::IsFull( void )
 void cRobot::SeekMaterial()
 {
 	// I NEED MATERIAL - Mediator help me find some ? (lowestMatStored)
+	//if( !this->isMoving )
+	//{
+	//	std::cout << this->GetName() << ": I'm low on " << lowestMatStored << ", better look for some..." << std::endl;
+	//	std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
+	//													" / El=" << storedElectronics <<
+	//													" / Pl=" << storedPlastic <<
+	//													" / St=" << storedSteel << std::endl;
+	//	std::cout << this->GetName() << ": Current Ccty. -> Al=" << percAluminum << "%" <<
+	//													" / El=" << percElectronics << "%" <<
+	//													" / Pl=" << percPlastic << "%" <<
+	//													" / St=" << percSteel << "%" << std::endl;
+	//}
+
 	glm::vec3 thePosition = this->GetPosition();
 
 	std::vector<std::string> vecParam;
@@ -229,6 +256,12 @@ void cRobot::CheckStorage()
 	percElectronics = GetStored( "electronics" ) / GetCapacity( "electronics" );
 	percPlastic = GetStored( "plastic" ) / GetCapacity( "plastic" );
 	percSteel = GetStored( "steel" ) / GetCapacity( "steel" );
+
+	percAluminum *= 100;
+	percElectronics *= 100;
+	percPlastic *= 100;
+	percSteel *= 100;
+
 
 	//Start with the last material alphabetically, and backwards
 	lowestPerc = percSteel;
@@ -261,6 +294,8 @@ void cRobot::CheckStorage()
 	if( storedSteel == 0.0f )
 		consumeRateMultiplier += 1;
 
+	if( consumeRateMultiplier > 4 ) consumeRateMultiplier = 4;
+
 	return;
 }
 
@@ -289,6 +324,43 @@ void cRobot::StoreMaterial( std::string materialType, float amount )
 	return;
 }
 
+void cRobot::ConsumeMaterials( double timestep )
+{
+	float amountToConsume = 0.0f;
+	
+
+	//aluminum
+	amountToConsume = ( consumeRateAluminum * timestep ) / 1.0f;
+	amountToConsume *= consumeRateMultiplier;
+	this->ConsumeMaterial( "aluminum", amountToConsume );
+
+	//electronics
+	amountToConsume = ( consumeRateElectronics * timestep ) / 1.0f;
+	amountToConsume *= consumeRateMultiplier;
+	this->ConsumeMaterial( "electronics", amountToConsume );
+
+	//plastic
+	amountToConsume = ( consumeRatePlastic * timestep ) / 1.0f;
+	amountToConsume *= consumeRateMultiplier;
+	this->ConsumeMaterial( "plastic", amountToConsume );
+
+	//steel
+	amountToConsume = ( consumeRateSteel * timestep ) / 1.0f;
+	amountToConsume *= consumeRateMultiplier;
+	this->ConsumeMaterial( "steel", amountToConsume );
+
+
+	//std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
+	//	" / El=" << storedElectronics <<
+	//	" / Pl=" << storedPlastic <<
+	//	" / St=" << storedSteel << " --- " << std::endl;
+	std::cout << this->GetName() << ": Current Ccty. -> Al=" << percAluminum << "%" <<
+		" / El=" << percElectronics << "%" <<
+		" / Pl=" << percPlastic << "%" <<
+		" / St=" << percSteel << "%" << std::endl;
+
+	return;
+}
 void cRobot::ConsumeMaterial( std::string materialType, float amount )
 {
 	if( materialType == "aluminum" )
@@ -299,17 +371,17 @@ void cRobot::ConsumeMaterial( std::string materialType, float amount )
 	else if( materialType == "electronics" )
 	{
 		storedElectronics -= amount;
-		if( storedElectronics <= 0.0f ) storedAluminum = 0.0f;
+		if( storedElectronics <= 0.0f ) storedElectronics = 0.0f;
 	}
 	else if( materialType == "plastic" )
 	{
 		storedPlastic -= amount;
-		if( storedPlastic <= 0.0f ) storedAluminum = 0.0f;
+		if( storedPlastic <= 0.0f ) storedPlastic = 0.0f;
 	}
 	else if( materialType == "steel" )
 	{
 		storedSteel -= amount;
-		if( storedSteel <= 0.0f ) storedAluminum = 0.0f;
+		if( storedSteel <= 0.0f ) storedSteel = 0.0f;
 	}
 	return;
 }
