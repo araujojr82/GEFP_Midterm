@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+int numberOfDumpedItens = 0;
+
 extern float generateRandomNumber( float min, float max );
 
 float distanceSqEucl( float x1, float y1, float x2, float y2 ) {
@@ -62,8 +64,9 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 
 	for( int index = 0; index != numberOfalumiObjs; index++ )
 	{	// Create aluminum garbage objects
+		numberOfDumpedItens += 1;
 		iGameObject* pGarbage = pFactory->CreateObject( "garbage" );
-		pGarbage->SetName( "garbage" + std::to_string( index ) );
+		pGarbage->SetName( "garbage" + std::to_string( numberOfDumpedItens ) );
 		pGarbage->SetType( "aluminum" );
 		pGarbage->SetPosition( GetRandomPosition( center, 2000.0f ) );
 
@@ -73,8 +76,9 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 
 	for( int index = 0; index != numberOfsteelObjs; index++ )
 	{	// Create steel garbage objects
+		numberOfDumpedItens += 1;
 		iGameObject* pGarbage = pFactory->CreateObject( "garbage" );
-		pGarbage->SetName( "garbage" + std::to_string( index ) );
+		pGarbage->SetName( "garbage" + std::to_string( numberOfDumpedItens ) );
 		pGarbage->SetType( "steel" );
 		pGarbage->SetPosition( GetRandomPosition( center, 2000.0f ) );
 
@@ -84,8 +88,9 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 
 	for( int index = 0; index != numberOfelectObjs; index++ )
 	{	// Create electronics garbage objects
+		numberOfDumpedItens += 1;
 		iGameObject* pGarbage = pFactory->CreateObject( "garbage" );
-		pGarbage->SetName( "garbage" + std::to_string( index ) );
+		pGarbage->SetName( "garbage" + std::to_string( numberOfDumpedItens ) );
 		pGarbage->SetType( "electronics" );
 		pGarbage->SetPosition( GetRandomPosition( center, 2000.0f ) );
 
@@ -95,8 +100,9 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 
 	for( int index = 0; index != numberOfplastObjs; index++ )
 	{	// Create aluminum garbage objects
+		numberOfDumpedItens += 1;
 		iGameObject* pGarbage = pFactory->CreateObject( "garbage" );
-		pGarbage->SetName( "garbage" + std::to_string( index ) );
+		pGarbage->SetName( "garbage" + std::to_string( numberOfDumpedItens ) );
 		pGarbage->SetType( "plastic" );
 		pGarbage->SetPosition( GetRandomPosition( center, 2000.0f ) );
 

@@ -21,6 +21,8 @@ cGameObject::cGameObject()
 	this->bIsLight = false;
 	this->myLight = NULL;
 
+	bool isActive = true;
+
 	return;
 }
 

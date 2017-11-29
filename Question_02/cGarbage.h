@@ -30,8 +30,13 @@ public:
 
 	cGameObject* pMesh;
 
+	void SetMass( float newMass );
+	float GetMass( void );
+
 private:
 	std::string name, type;
+
+	float mass;
 
 	bool isActive;
 

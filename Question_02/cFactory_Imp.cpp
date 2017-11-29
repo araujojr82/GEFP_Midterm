@@ -84,12 +84,12 @@ void cFactory_Imp::UpdateAllObjects(double currTime, double timestep)
 
 std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::string targetObj, std::vector<std::string> parameters)
 {
-	iGameObject* pCurrentObj = this->FindObjByName( targetObj );
+	//iGameObject* pCurrentObj = this->FindObjByName( targetObj );
 	std::vector<std::string> vecResult;
 
 	if( theActiveGO->GetType() == "robot" )
 	{
-		cRobot* theRobot = ( cRobot* )pCurrentObj;
+		cRobot* theRobot = ( cRobot* )theActiveGO;
 
 		if( parameters[0] == "FindClosestObjByType" )
 		{
@@ -103,7 +103,7 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 			{
 				glm::vec3 theGOPos = theGO->GetPosition();
 
-				theRobot->MoveTo( theGOPos, theGO->GetName() );
+				theRobot->GatherObject( theGOPos, theGO->GetName() );
 
 				vecResult.push_back( std::to_string( theGOPos.x ) );
 				vecResult.push_back( std::to_string( theGOPos.y ) );
@@ -114,14 +114,11 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 		}
 		else if( parameters[0] == "ConsumeMaterial" )
 		{
-			iGameObject* theGO = this->FindObjByName( parameters[1] );
-			if( theGO->GetType() == "garbage" )
-			{
-				theGO->Destroy();
+			cGarbage* theGarbage = ( cGarbage* )this->FindObjByName( parameters[1] );
+			theRobot->StoreMaterial( theGarbage->GetType(), theGarbage->GetMass() );
+			theGarbage->Destroy();
 
-				return vecResult;
-			}
-
+			return vecResult;
 		}
 	}
 
@@ -156,25 +153,25 @@ iGameObject* cFactory_Imp::FindClosestObjByType(std::string objType, glm::vec3 f
 	iGameObject* nearestObj = NULL;
 	glm::vec3 targetPos;
 
-	////Set first active object of that type to avoid null object
-	//for( int index = 0; index != this->vec_pObjects.size(); index++ )
-	//{
-	//	nearestObj = this->vec_pObjects[index];
-	//	if( nearestObj->GetType == objType )
-	//	{	
-	//		if( nearestObj->IsActive )
-	//		exit;
-	//	}
-	//}
+	//Set first active object of that type to avoid null object
+	for( int index = 0; index != this->vec_pObjects.size(); index++ )
+	{
+		nearestObj = this->vec_pObjects[index];
+		if( nearestObj->GetType() == objType )
+		{	
+			if( nearestObj->IsActive() )
+			break;
+		}
+	}
 
 	//Find the actual nearest cell
 	for( int index = 0; index != this->vec_pObjects.size(); index++ )
 	{
 		iGameObject* pCurrentObj = this->vec_pObjects[index];
-		if( nearestObj->GetType() == objType )
+		if( pCurrentObj->GetType() == objType )
 		{	// Only compare distance to objects of target type
 
-			if( nearestObj->IsActive() )
+			if( pCurrentObj->IsActive() )
 			{	// Only compare distance with active objects
 				targetPos = pCurrentObj->GetPosition();
 				tempDist = sqrt( pow( targetPos.x - fromPos.x, 2 ) + pow( targetPos.y - fromPos.y, 2 ) );

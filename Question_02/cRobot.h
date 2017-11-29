@@ -29,7 +29,8 @@ public:
 	virtual void SetMediator( iMediator* pMediator );
 
 	//Robot exclusive methods
-	void MoveTo( glm::vec3 targetPosition, std::string targetName );
+	void GatherObject( glm::vec3 targetPosition, std::string targetName );
+	void MoveTo( glm::vec3 targetPosition );
 	bool IsFull( void );
 	void SeekMaterial();
 	void CheckStorage();

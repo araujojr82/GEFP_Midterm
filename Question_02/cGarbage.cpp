@@ -4,6 +4,8 @@
 cGarbage::cGarbage()
 {
 	//std::cout << "cGarbage::cGarbage() is called" << std::endl;
+	this->mass = 0.0f;
+	isActive = true;
 	return;
 }
 
@@ -50,6 +52,17 @@ void cGarbage::SetName( std::string newName )
 	return;
 }
 
+void cGarbage::SetMass( float newMass )
+{
+	this->mass = newMass;
+	return;
+}
+
+float cGarbage::GetMass( void )
+{
+	return this->mass;
+}
+
 std::string cGarbage::GetType( void )
 {
 	return this->type;
@@ -62,22 +75,26 @@ void cGarbage::SetType( std::string newType )
 	if( newType == "aluminum" )
 	{
 		this->pMesh->meshName = "alum_can";
-		this->pMesh->diffuseColour = glm::vec4( 0.8f, 0.8f, 0.8f, 1.0f );	// Light Grey
+		this->pMesh->diffuseColour = glm::vec4( 0.6f, 0.6f, 0.6f, 1.0f );	// Light Grey
+		this->mass = 0.1f;
 	}
 	else if( newType == "electronics" )
 	{
 		this->pMesh->meshName = "elect_tv";
-		this->pMesh->diffuseColour = glm::vec4( 0.5f, 0.5f, 0.5f, 1.0f );	// Grey
+		this->pMesh->diffuseColour = glm::vec4( 0.4f, 0.5f, 0.5f, 1.0f );	// Grey
+		this->mass = 0.1f;
 	}
 	else if( newType == "plastic" )
 	{
 		this->pMesh->meshName = "plast_lego";
 		this->pMesh->diffuseColour = glm::vec4( 0.0f, 1.0f, 0.0f, 1.0f );	// Green
+		this->mass = 0.5f;
 	}
 	else if( newType == "steel" )
 	{
 		this->pMesh->meshName = "steel_can";
-		this->pMesh->diffuseColour = glm::vec4( 0.2f, 0.2f, 0.2f, 1.0f );	//Dark Grey
+		this->pMesh->diffuseColour = glm::vec4( 0.4f, 0.2f, 0.2f, 1.0f );	//Dark Grey
+		this->mass = 0.2f;
 	}
 
 	return;
@@ -98,6 +115,7 @@ void cGarbage::Update( void )
 void cGarbage::Destroy( void )
 {
 	isActive = false;
+	this->pMesh->isActive = false;
 	return;
 }
 

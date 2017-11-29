@@ -102,13 +102,15 @@ void cRobot::SetMediator( iMediator* pMediator )
 	return;
 }
 
-void cRobot::MoveTo( glm::vec3 newTargetPosition, std::string newTargetName )
+void cRobot::GatherObject( glm::vec3 newTargetPosition, std::string newTargetName )
 {	
 	float targetDistance = glm::distance( newTargetPosition, this->GetPosition() );
 
-	if( targetDistance >= 0.1 )
+	if( targetDistance <= 5.0f )
 	{	// Reach the target - Ask mediator for help to destroy it.
 		isMoving = false;
+
+		this->SetVelocity( glm::vec3( 0.0f ) );
 
 		std::vector<std::string> vecParam;
 		std::vector<std::string> vecResult;
@@ -116,9 +118,10 @@ void cRobot::MoveTo( glm::vec3 newTargetPosition, std::string newTargetName )
 		vecParam.push_back( "ConsumeMaterial" );
 		vecParam.push_back( targetName );
 
-		vecResult = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
-
+		vecResult = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );		
 		
+		targetName = "";
+		targetPosition = ( glm::vec3( 0.0f ) );
 
 	}
 	else
@@ -126,7 +129,29 @@ void cRobot::MoveTo( glm::vec3 newTargetPosition, std::string newTargetName )
 		isMoving = true;
 		targetName = newTargetName;
 		targetPosition = newTargetPosition;
+		this->MoveTo( targetPosition );
 	}
+
+	return;
+}
+
+void cRobot::MoveTo( glm::vec3 targetPosition )
+{
+	float startX, startY, endX, endY;
+
+	startX = this->GetPosition().x;
+	startY = this->GetPosition().y;
+	endX = targetPosition.x;
+	endY = targetPosition.y;
+
+	float distance = sqrt( pow( endX - startX, 2 ) + pow( endY - startY, 2 ) );
+	float directionX = ( endX - startX ) / distance;
+	float directionY = ( endY - startY ) / distance;
+
+	directionX *= 50.0f;
+	directionY *= 50.0f;
+
+	this->SetVelocity( glm::vec3( directionX, directionY, 0.0f ) );
 
 	return;
 }
@@ -134,6 +159,7 @@ void cRobot::MoveTo( glm::vec3 newTargetPosition, std::string newTargetName )
 void cRobot::Destroy( void )
 {
 	isActive = false;
+	this->pMesh->isActive = false;
 	return;
 }
 
@@ -248,17 +274,17 @@ void cRobot::StoreMaterial( std::string materialType, float amount )
 	else if( materialType == "electronics" )
 	{
 		storedElectronics += amount;
-		if( storedElectronics >= capacityOfAluminum ) storedAluminum = capacityOfElectronics;
+		if( storedElectronics >= capacityOfElectronics ) storedAluminum = capacityOfElectronics;
 	}
 	else if( materialType == "plastic" )
 	{
 		storedPlastic += amount;
-		if( storedPlastic >= capacityOfAluminum ) storedAluminum = capacityOfPlastic;
+		if( storedPlastic >= capacityOfPlastic ) storedAluminum = capacityOfPlastic;
 	}
 	else if( materialType == "steel" )
 	{
 		storedSteel += amount;
-		if( storedSteel >= capacityOfAluminum ) storedAluminum = capacityOfSteel;
+		if( storedSteel >= capacityOfSteel ) storedAluminum = capacityOfSteel;
 	}
 	return;
 }
@@ -287,7 +313,6 @@ void cRobot::ConsumeMaterial( std::string materialType, float amount )
 	}
 	return;
 }
-
 
 void cRobot::SetCapacity( std::string materialType, float capacity )
 {

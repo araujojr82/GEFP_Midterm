@@ -45,7 +45,7 @@ int g_NUMBER_OF_LIGHTS = 1;
 bool bIsWireframe = false;
 
 double g_lastDumpTime = 0;
-const float g_DUMP_INTERVAL = 10.0f;
+float g_dump_interval = 0.0f;
 
 // Remember to #include <vector>...
 std::vector< cGameObject* > g_vecGameObjects;
@@ -53,6 +53,9 @@ std::vector< cGameObject* > g_vecGameObjects;
 // Another container of ship
 cFactory* g_pFactory = NULL;
 std::vector< iGameObject* > g_vecObjects;
+
+iGameObject* g_targetGO = NULL;
+bool g_followRobot = false;
 
 
 glm::vec3 g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 5800.0f );;	// 5 units "down" z
@@ -96,6 +99,12 @@ static void error_callback( int error, const char* description )
 // All the keyboard input logic is here
 static void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
 {	
+	if( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
+	{
+		if ( g_followRobot ) g_followRobot = false;
+		else g_followRobot = true;		
+	}
+
 	if( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
 		glfwSetWindowShouldClose( window, GLFW_TRUE );
 
@@ -187,64 +196,73 @@ static void key_callback( GLFWwindow* window, int key, int scancode, int action,
 		break;
 	}
 
-	// Change camera Acceleration
-	switch( key )
-	{
-	case GLFW_KEY_J:		// Left
-		CAMERASPEED.x -= 0.00001f;
-		break;
-	case GLFW_KEY_L:		// Right
-		CAMERASPEED.x += 0.00001f;
-		break;
-	case GLFW_KEY_I:		// Forward (along z)
-		CAMERASPEED.z += 0.00001f;
-		break;
-	case GLFW_KEY_K:		// Backwards (along z)
-		CAMERASPEED.z -= 0.00001f;
-		break;
-	case GLFW_KEY_U:		// "Down" (along y axis)
-		CAMERASPEED.y -= 0.00001f;
-		break;
-	case GLFW_KEY_O:		// "Up" (along y axis)
-		CAMERASPEED.y += 0.00001f;
-		break;
-	}
+	//// Change camera Acceleration
+	//switch( key )
+	//{
+	//case GLFW_KEY_J:		// Left
+	//	CAMERASPEED.x -= 0.00001f;
+	//	break;
+	//case GLFW_KEY_L:		// Right
+	//	CAMERASPEED.x += 0.00001f;
+	//	break;
+	//case GLFW_KEY_I:		// Forward (along z)
+	//	CAMERASPEED.z += 0.00001f;
+	//	break;
+	//case GLFW_KEY_K:		// Backwards (along z)
+	//	CAMERASPEED.z -= 0.00001f;
+	//	break;
+	//case GLFW_KEY_U:		// "Down" (along y axis)
+	//	CAMERASPEED.y -= 0.00001f;
+	//	break;
+	//case GLFW_KEY_O:		// "Up" (along y axis)
+	//	CAMERASPEED.y += 0.00001f;
+	//	break;
+	//}
 
-	// Stop Camera
-	if( key == GLFW_KEY_P && action == GLFW_PRESS )
-	{
-		CAMERASPEED = glm::vec3( 0.0f, 0.0f, 0.0f );
-	}
+	//// Stop Camera
+	//if( key == GLFW_KEY_P && action == GLFW_PRESS )
+	//{
+	//	CAMERASPEED = glm::vec3( 0.0f, 0.0f, 0.0f );
+	//}
 
 	// Change Selected Light
 	switch ( key )
 	{
 	case GLFW_KEY_1:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 5800.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_2:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 3455.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_3:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 1800.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_4:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 700.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_5:
 		g_cameraXYZ = glm::vec3( 0.0f, 0.0f, 500.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_6:
 		g_cameraXYZ = glm::vec3( 0.0f, -1600.0f, 400.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_7:
 		g_cameraXYZ = glm::vec3( 0.0f, -455.0f, 100.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_8:
 		g_cameraXYZ = glm::vec3( 0.0f, -190.0f, 45.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	case GLFW_KEY_9:
 		g_cameraXYZ = glm::vec3( 0.0f, -110.0f, 30.0f );
+		g_cameraTarget_XYZ = glm::vec3( 0.0f, 0.0f, 0.0f );
 		break;
 	}
 
@@ -392,6 +410,12 @@ int main( void )
 			{	// Nothing to draw
 				continue;		// Skip all for loop code and go to next
 			}
+			
+			if( ::g_vecGameObjects[index]->isActive == false )
+			{	// Nothing to draw
+				continue;		// Skip all for loop code and go to next
+			}
+
 
 			// Was near the draw call, but we need the mesh name
 			std::string meshToDraw = ::g_vecGameObjects[index]->meshName;		//::g_GameObjects[index]->meshName;
@@ -485,6 +509,16 @@ int main( void )
 			// View or "camera" matrix
 			glm::mat4 v = glm::mat4( 1.0f );	// identity
 
+			if( g_followRobot )
+			{
+				g_targetGO = g_pFactory->FindObjByName( "R2D2" );
+				glm::vec3 targetPosition = g_targetGO->GetPosition();
+				g_cameraXYZ.x = targetPosition.x;
+				g_cameraXYZ.y = targetPosition.y - 550.0f;
+				g_cameraXYZ.z = 500.0f;
+				g_cameraTarget_XYZ = targetPosition;
+			}
+			
 			v = glm::lookAt( g_cameraXYZ,						// "eye" or "camera" position
 							 g_cameraTarget_XYZ,				// "At" or "target"							 
 							 glm::vec3( 0.0f, 1.0f, 0.0f ) );	// "up" vector
@@ -551,12 +585,12 @@ int main( void )
 		//std::cout << "Time: " << curTime << std::endl;
 		//std::cout << "Delta Time: " << deltaTime << std::endl;
 
-		if( curTime - g_lastDumpTime >= g_DUMP_INTERVAL )
+		if( curTime - g_lastDumpTime >= g_dump_interval )
 		{
 			DumpGarbage( g_pFactory, g_vecObjects );
 			g_lastDumpTime = curTime;
+			g_dump_interval = 10.0f;
 		}
-		
 
 		// Use mediator to update all objects
 		::g_pFactory->UpdateAllObjects( curTime, deltaTime );
