@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F477C072-135E-4153-8C57-F7B668A06DB2}</ProjectGuid>
+    <ProjectGuid>{4BAE2F8F-38D8-40C5-8C95-2D7B5A387BFD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>FirstOpenGL</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>

@@ -1,5 +1,6 @@
 #include "cRobot.h"
 #include <iostream>
+#include <algorithm>    // std::sort
 
 extern float generateRandomNumber( float min, float max );
 
@@ -27,6 +28,7 @@ cRobot::cRobot()
 	//Plastics		2.0 to 15 kg	0.05 to 0.012 kg / second <-THIS MUST BE A TYPO, I'M CONSIDERING 0.12 as maximum
 
 	firstEmpty = 0;
+	lastPrint = 0;
 
 	storedAluminum = 0.0f;
 	storedElectronics = 0.0f;
@@ -86,6 +88,32 @@ void cRobot::SetName( std::string newName )
 	return;
 }
 
+char getRandomLetter()
+{
+	char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	char random = letters[rand() % 26];
+
+	return random;	
+}
+
+void cRobot::SetRandomName()
+{
+
+	int randomNumber1 = rand() % 9 + 0;
+	int randomNumber2 = rand() % 9 + 0;
+
+	std::string randomNumAsString1 = std::to_string( randomNumber1 );
+	std::string randomNumAsString2 = std::to_string( randomNumber2 );
+
+	std::string name = "R0B0";
+	name[0] = getRandomLetter();
+	name[1] = *randomNumAsString1.c_str();
+	name[2] = getRandomLetter();
+	name[3] = *randomNumAsString2.c_str();
+
+	this->name = name;
+
+}
 std::string cRobot::GetType( void )
 {
 	return this->type;
@@ -108,21 +136,22 @@ void cRobot::GatherObject( glm::vec3 newTargetPosition, std::string newTargetNam
 {	
 	float targetDistance = glm::distance( newTargetPosition, this->GetPosition() );
 
-	if( targetDistance <= 5.0f )
+	if( targetDistance <= 8.0f )
 	{	// Reach the target - Ask mediator for help to destroy it.
 		isMoving = false;
 
 		this->SetVelocity( glm::vec3( 0.0f ) );
 
 		std::vector<std::string> vecParam;
-		std::vector<std::string> vecResult;
+		//std::vector<std::string> vecResult;
+		bool result;
 
 		/*if( targetName != "" )
 		{*/
 			vecParam.push_back( "ConsumeMaterial" );
 			vecParam.push_back( targetName );
 
-			vecResult = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+			result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
 
 		//}
 		targetName = "";
@@ -156,6 +185,8 @@ void cRobot::MoveTo( glm::vec3 targetPosition )
 	float directionY = ( endY - startY ) / distance;
 
 	// Calculate a faster speed based on the distance to the object
+	/*directionX = ( directionX * 8 ) * ( distance * 0.7f );
+	directionY = ( directionY * 8 ) * ( distance * 0.7f );*/
 	directionX = ( directionX * 8 ) * ( distance * 0.7f );
 	directionY = ( directionY * 8 ) * ( distance * 0.7f );
 
@@ -187,6 +218,17 @@ void cRobot::Update( double currTime, double timestep )
 	// Update storage levels information
 	this->CheckStorage();
 
+	//double diff = currTime - lastPrint;
+	//if( diff >= 1.0 )
+	//{
+	//	std::cout << this->GetName() << "It has been " << diff << " seconds since I last checked." << std::endl;
+	//	std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
+	//		" / El=" << storedElectronics <<
+	//		" / Pl=" << storedPlastic <<
+	//		" / St=" << storedSteel << std::endl;
+	//	lastPrint = currTime;
+	//}
+
 	this->ConsumeMaterials( timestep );
 
 	if( this->IsFull() )
@@ -194,6 +236,21 @@ void cRobot::Update( double currTime, double timestep )
 		//std::cout << this->GetName() << ":I'm FULL!!!" << std::endl;
 		// TODO implement reproduction
 		//this.reproduce();
+	}
+	else if( Is50PercFull() )
+	{
+		// TODO implement reproduction
+		//this.reproduce();
+
+		std::vector<std::string> vecParam;
+		//std::vector<std::string> vecResult;
+		bool result;
+
+		vecParam.push_back( "CreateRobot" );
+		vecParam.push_back( targetName );
+
+		result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+
 	}
 
 	else
@@ -216,7 +273,8 @@ void cRobot::Update( double currTime, double timestep )
 		}
 
 		// If any material is bellow 90%, try to find some
-		if( lowestPerc <= 90.0f )
+		//if( lowestPerc <= 90.0f )
+		if ( lowestMaterials[0].percAmount <= 90.0f )
 		{
 			this->SeekMaterial();
 		}
@@ -252,16 +310,28 @@ bool cRobot::IsEmpty( void )
 	return materialEmpty;
 }
 
+bool cRobot::Is50PercFull( void )
+{
+	bool material50PercFull = true;
+
+	if( percAluminum < 50.0f ) material50PercFull = false;
+	if( percElectronics < 50.0f ) material50PercFull = false;
+	if( percPlastic < 50.0f ) material50PercFull = false;
+	if( percSteel < 50.0f ) material50PercFull = false;
+
+	return material50PercFull;
+}
+
 void cRobot::SeekMaterial()
 {
 	// I NEED MATERIAL - Mediator help me find some ? (lowestMatStored)
 	//if( !this->isMoving )
 	//{
-	//	std::cout << this->GetName() << ": I'm low on " << lowestMatStored << ", better look for some..." << std::endl;
-		std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
-														" / El=" << storedElectronics <<
-														" / Pl=" << storedPlastic <<
-														" / St=" << storedSteel << std::endl;
+	//std::cout << this->GetName() << ": I'm low on " << lowestMaterials[0].materialType << ", better look for some..." << std::endl;
+		//std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
+		//												" / El=" << storedElectronics <<
+		//												" / Pl=" << storedPlastic <<
+		//												" / St=" << storedSteel << std::endl;
 		//std::cout << this->GetName() << ": Current Ccty. -> Al=" << percAluminum << "%" <<
 		//												" / El=" << percElectronics << "%" <<
 		//												" / Pl=" << percPlastic << "%" <<
@@ -271,16 +341,27 @@ void cRobot::SeekMaterial()
 	glm::vec3 thePosition = this->GetPosition();
 
 	std::vector<std::string> vecParam;
-	std::vector<std::string> vecResult;
+	//std::vector<std::string> vecResult;
+	bool result = false;
 
-	vecParam.push_back( "FindClosestObjByType" );
-	vecParam.push_back( lowestMatStored );
+	int index = 0;
+	while( !result )
+	{
+		if( index != this->lowestMaterials.size() )
+		{
+			vecParam.clear();
+			vecParam.push_back( "FindClosestObjByType" );
+			vecParam.push_back( lowestMaterials[index].materialType );
 
-	vecParam.push_back( std::to_string( thePosition.x ) );
-	vecParam.push_back( std::to_string( thePosition.y ) );
-	vecParam.push_back( std::to_string( thePosition.z ) );
+			vecParam.push_back( std::to_string( thePosition.x ) );
+			vecParam.push_back( std::to_string( thePosition.y ) );
+			vecParam.push_back( std::to_string( thePosition.z ) );
 
-	vecResult = this->m_pTheMediator->Mediate( (iGameObject* )this, this->GetName(), vecParam );
+			result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+			index++;
+		}
+		else return;
+	}
 
 	return;
 }
@@ -298,7 +379,6 @@ void cRobot::CheckStorage()
 	percElectronics *= 100;
 	percPlastic *= 100;
 	percSteel *= 100;
-
 
 	//Start with the last material alphabetically, and backwards
 	lowestPerc = percSteel;
@@ -319,6 +399,14 @@ void cRobot::CheckStorage()
 		lowestPerc = percAluminum;
 		lowestMatStored = "aluminum";
 	}
+	lowestMaterials.clear();
+
+	lowestMaterials.push_back( matPercAmount( percAluminum, "aluminum" ) );
+	lowestMaterials.push_back( matPercAmount( percElectronics, "electronics" ) );
+	lowestMaterials.push_back( matPercAmount( percPlastic, "plastic" ) );
+	lowestMaterials.push_back( matPercAmount( percSteel, "steel" ) );
+	
+	std::sort( lowestMaterials.begin(), lowestMaterials.end() );
 
 	consumeRateMultiplier = 1;
 

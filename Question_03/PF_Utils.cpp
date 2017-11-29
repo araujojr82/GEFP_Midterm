@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "cRobot.h"
+
 int numberOfDumpedItens = 0;
 
 extern float generateRandomNumber( float min, float max );
@@ -108,53 +110,25 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 		pGarbage->SetRotation( glm::vec3( 0.0f ) );
 		vecObjects.push_back( pGarbage );
 	}
-
 }
 
 void loadObjectsUsingFactory( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 {
     iGameObject* pRobot = pFactory->CreateObject("robot");    
-	pRobot->SetName("R2D2");
-	pRobot->SetType( "robot" );
-	pRobot->SetPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	pRobot->SetVelocity( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	pRobot->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-    vecObjects.push_back( pRobot );
-    
- //   // These lines create a new object just by recompiling this object. Uncoment to test!
- //   iGameObject* pSpaceShip2 = pFactory->CreateObject("fighter2");
-	//pSpaceShip2->setName( "Player2Ship" );
-	//pSpaceShip2->SetPosition( glm::vec3( 4.0f, -4.5f, 0.0f ) );
-	//pSpaceShip2->SetVelocity( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	//pSpaceShip2->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	//vecObjects.push_back( pSpaceShip2 );
 
-	//for( int index = 0; index != 5; index++ )
-	//{
-	//	iGameObject* pVirus = pFactory->CreateObject( "virus" );
-	//	pVirus->setName( "virus" + std::to_string( index ) );
-	//	pVirus->SetPosition( glm::vec3( generateRandomNumber( -11.0f, 11.0f ), //x
-	//									generateRandomNumber( -6.0f, 6.0f ), //y
-	//									0.0f ) );				             //z
-	//	
-	//	pVirus->SetRotation( glm::vec3( generateRandomNumber( -0.02f, 0.02f ),
-	//		generateRandomNumber( -0.02f, 0.02f ),
-	//		generateRandomNumber( -0.02f, 0.02f ) ) );
-	//	vecObjects.push_back( pVirus );
-	//}
+	cRobot* pTheR2D2 = ( cRobot* )pRobot;
 
-	//for( int index = 0; index != 2; index++ )
-	//{
-	//	iGameObject* pBacteria = pFactory->CreateObject( "bacteria" );
-	//	pBacteria->setName( "bacteria" + std::to_string( index ) );
-	//	pBacteria->SetPosition( glm::vec3( generateRandomNumber( -11.0f, 11.0f ), //x
-	//		generateRandomNumber( -6.0f, 6.0f ), //y
-	//		0.0f ) );				             //z
-	//
-	//	pBacteria->SetRotation( glm::vec3( generateRandomNumber( -0.02f, 0.02f ),
-	//		generateRandomNumber( -0.02f, 0.02f ),
-	//		generateRandomNumber( -0.02f, 0.02f ) ) );
-	//	vecObjects.push_back( pBacteria );
-	//}
+	pTheR2D2->SetName("R2D2");
+	pTheR2D2->SetType( "robot" );
+	pTheR2D2->SetPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	pTheR2D2->SetVelocity( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	pTheR2D2->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	
+	// I'M GIVING THE FIRST ROBOT 10% OF HIS CAPACITY TO START A NEW LIFE ON THIS PLANET
+	pTheR2D2->StoreMaterial( "aluminum", ( pTheR2D2->GetCapacity( "aluminum" ) * 0.1 ) );
+	pTheR2D2->StoreMaterial( "electronics", ( pTheR2D2->GetCapacity( "electronics" ) * 0.1 ) );
+	pTheR2D2->StoreMaterial( "plastic", ( pTheR2D2->GetCapacity( "plastic" ) * 0.1 ) );
+	pTheR2D2->StoreMaterial( "steel", ( pTheR2D2->GetCapacity( "steel" ) * 0.1 ) );
 
+    vecObjects.push_back( pTheR2D2 );
 }

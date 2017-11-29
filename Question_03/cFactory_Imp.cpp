@@ -109,10 +109,8 @@ void cFactory_Imp::UpdateAllObjects(double currTime, double timestep)
     return;
 }
 
-std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::string targetObj, std::vector<std::string> parameters)
+bool cFactory_Imp::Mediate( iGameObject* theActiveGO, std::string targetObj, std::vector<std::string> parameters)
 {
-	//iGameObject* pCurrentObj = this->FindObjByName( targetObj );
-	std::vector<std::string> vecResult;
 
 	if( theActiveGO->GetType() == "robot" )
 	{
@@ -132,12 +130,11 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 				std::string theGOName = theGO->GetName();
 
 				theRobot->GatherObject( theGOPos, theGOName );
-
-				vecResult.push_back( std::to_string( theGOPos.x ) );
-				vecResult.push_back( std::to_string( theGOPos.y ) );
-				vecResult.push_back( std::to_string( theGOPos.z ) );
-
-				return vecResult;
+				return true;
+			}
+			else
+			{
+				return false;
 			}
 
 		}
@@ -148,13 +145,61 @@ std::vector<std::string> cFactory_Imp::Mediate( iGameObject* theActiveGO, std::s
 			{
 				theRobot->StoreMaterial( theGarbage->GetType(), theGarbage->GetMass() );
 				theGarbage->Destroy();
+				return true;
 			}
+			else return false;
+		}
+		else if( parameters[0] == "CreateRobot" )
+		{
+			float tenPercAl, tenPercEl, tenPercPl, tenPercSt;
+			//iGameObject* cFactory_Imp::CreateObject( std::string objType )
 
-			return vecResult;
+			cRobot* theNewRobot = ( cRobot* )CreateObject( "robot" );
+			if( !theNewRobot == NULL )
+			{
+				//Check for the container size of the newRobot (THE SON)
+				tenPercAl = theNewRobot->GetCapacity( "aluminum" ) * 0.1;
+				tenPercEl = theNewRobot->GetCapacity( "electronics" ) * 0.1;
+				tenPercPl = theNewRobot->GetCapacity( "plastic" ) * 0.1;
+				tenPercSt = theNewRobot->GetCapacity( "steel" ) * 0.1;
+
+				if( ( theRobot->GetStored( "aluminum" ) >= tenPercAl ) &&
+					( theRobot->GetStored( "electronics" ) >= tenPercEl ) &&
+					( theRobot->GetStored( "plastic" ) >= tenPercPl ) &&
+					( theRobot->GetStored( "steel" ) >= tenPercSt ) )
+				{ // The Robot (Father) has enough material to create "life" 
+					theRobot->ConsumeMaterial( "aluminum", tenPercAl );
+					theRobot->ConsumeMaterial( "electronics", tenPercEl );
+					theRobot->ConsumeMaterial( "plastic", tenPercPl );
+					theRobot->ConsumeMaterial( "steel", tenPercSt );
+
+					theNewRobot->StoreMaterial( "aluminum", tenPercAl );
+					theNewRobot->StoreMaterial( "electronics", tenPercEl );
+					theNewRobot->StoreMaterial( "plastic", tenPercPl );
+					theNewRobot->StoreMaterial( "steel", tenPercSt );
+					theNewRobot->SetRandomName();
+					theNewRobot->SetType( "robot" );
+					theNewRobot->SetPosition( theRobot->GetPosition() );
+					theNewRobot->SetVelocity( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+					theNewRobot->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+					vec_pObjects.push_back( theNewRobot );
+
+					std::cout << theRobot->GetName() << ": I have created life! My son will be call " << theNewRobot->GetName() << std::endl;
+
+					return true;
+				}
+				else
+				{ // Not enough material, destroy that empty shell
+					theNewRobot->Destroy();
+					return false;
+				}
+
+			}
+			else return false;
 		}
 	}
 
-	return vecResult;
+	return false;
 }
 
 
@@ -180,7 +225,7 @@ iGameObject* cFactory_Imp::FindObjByName(std::string name)
 
 iGameObject* cFactory_Imp::FindClosestObjByType(std::string objType, glm::vec3 fromPos)
 {
-    float distance = 2100.0f;
+    float distance = 10000.0f;
 	float tempDist = 0.0f;
 	iGameObject* nearestObj = NULL;
 	glm::vec3 targetPos;
@@ -188,32 +233,39 @@ iGameObject* cFactory_Imp::FindClosestObjByType(std::string objType, glm::vec3 f
 	//Set first active object of that type to avoid null object
 	for( int index = 0; index != this->vec_pObjects.size(); index++ )
 	{
-		nearestObj = this->vec_pObjects[index];
-		if( nearestObj->GetType() == objType )
+		//nearestObj = this->vec_pObjects[index];
+		iGameObject* tempObj = this->vec_pObjects[index];
+		if( tempObj->GetType() == objType )
 		{	
-			if( nearestObj->IsActive() )
-			break;
-		}
-	}
-
-	//Find the actual nearest cell
-	for( int index = 0; index != this->vec_pObjects.size(); index++ )
-	{
-		iGameObject* pCurrentObj = this->vec_pObjects[index];
-		if( pCurrentObj->GetType() == objType )
-		{	// Only compare distance to objects of target type
-
-			if( pCurrentObj->IsActive() )
-			{	// Only compare distance with active objects
-				targetPos = pCurrentObj->GetPosition();
-				tempDist = sqrt( pow( targetPos.x - fromPos.x, 2 ) + pow( targetPos.y - fromPos.y, 2 ) );
-				if( tempDist <= distance )
-				{
-					distance = tempDist;
-					nearestObj = pCurrentObj;
-				}
+			if( tempObj->IsActive() )
+			{
+				nearestObj = tempObj;
+				break;
 			}
 		}
 	}
-	return nearestObj;
+
+	if( nearestObj != NULL ) //There's at least one object of that type
+	{	//Find the actual nearest object
+		for( int index = 0; index != this->vec_pObjects.size(); index++ )
+		{
+			iGameObject* pCurrentObj = this->vec_pObjects[index];
+			if( pCurrentObj->GetType() == objType )
+			{	// Only compare distance to objects of target type
+				if( pCurrentObj->IsActive() )
+				{	// Only compare distance with active objects
+					targetPos = pCurrentObj->GetPosition();
+					//tempDist = sqrt( pow( targetPos.x - fromPos.x, 2 ) + pow( targetPos.y - fromPos.y, 2 ) );
+					tempDist = glm::distance( targetPos, fromPos );
+					if( tempDist <= distance )
+					{
+						distance = tempDist;
+						nearestObj = pCurrentObj;
+					}
+				}
+			}
+		}
+		return nearestObj;
+	}
+	else return NULL;
 }

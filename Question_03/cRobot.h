@@ -3,6 +3,8 @@
 
 #include "iGameObject.h"
 
+#include <vector>
+
 class cGameObject;	// forward declare
 
 class cRobot : public iGameObject
@@ -19,6 +21,7 @@ public:
 	virtual void SetVelocity( glm::vec3 newVel );
 	virtual void SetRotation( glm::vec3 newRot );
 	virtual void SetName( std::string newName );
+	virtual void SetRandomName( void );
 	virtual void SetType( std::string newType );
 
 	virtual glm::vec3 GetPosition( void );
@@ -33,6 +36,7 @@ public:
 	void MoveTo( glm::vec3 targetPosition );
 	bool IsFull( void );
 	bool IsEmpty( void );
+	bool Is50PercFull( void );
 	void SeekMaterial();
 	void CheckStorage();
 	void StoreMaterial( std::string materialType, float amount );
@@ -48,6 +52,19 @@ public:
 
 	cGameObject* pMesh;
 
+	struct matPercAmount
+	{
+		float percAmount;
+		std::string materialType;		
+
+		matPercAmount( float k, const std::string& s ) : percAmount( k ), materialType( s ) {}
+
+		bool operator < ( const matPercAmount& str ) const
+		{
+			return ( percAmount < str.percAmount );
+		}
+	};
+
 private:
 	std::string name, type, targetName;
 
@@ -56,10 +73,14 @@ private:
 	bool isActive, isMoving;
 
 	double firstEmpty;
+	double lastPrint;
 
 	int consumeRateMultiplier;
 
 	std::string lowestMatStored;
+
+	std::vector <matPercAmount> lowestMaterials;
+
 	float lowestPerc;
 
 	float consumeRateAluminum;

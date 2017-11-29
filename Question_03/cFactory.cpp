@@ -37,7 +37,7 @@ void cFactory::UpdateAllObjects( double currTime, double timestep )
     this->pImp->UpdateAllObjects(currTime, timestep);
 }
 
-std::vector<std::string> cFactory::Mediate( iGameObject* theActiveGO, std::string targetObj, std::vector<std::string> parameters )
+bool cFactory::Mediate( iGameObject* theActiveGO, std::string targetObj, std::vector<std::string> parameters )
 {
     return this->pImp->Mediate( theActiveGO, targetObj, parameters );
 }
