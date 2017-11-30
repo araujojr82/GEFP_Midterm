@@ -1,6 +1,7 @@
 #include "cRobot.h"
 #include <iostream>
 #include <algorithm>    // std::sort
+#include <iomanip>
 
 extern float generateRandomNumber( float min, float max );
 
@@ -213,6 +214,19 @@ bool cRobot::IsActive( void )
 	return this->isActive;
 }
 
+void cRobot::Reproduce( void )
+{
+	std::vector<std::string> vecParam;
+	bool result;
+
+	vecParam.push_back( "CreateRobot" );
+	vecParam.push_back( targetName );
+
+	result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+
+	return;
+}
+
 void cRobot::Update( double currTime, double timestep )
 {
 	// Update storage levels information
@@ -221,11 +235,12 @@ void cRobot::Update( double currTime, double timestep )
 	//double diff = currTime - lastPrint;
 	//if( diff >= 1.0 )
 	//{
-	//	std::cout << this->GetName() << "It has been " << diff << " seconds since I last checked." << std::endl;
-	//	std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
-	//		" / El=" << storedElectronics <<
-	//		" / Pl=" << storedPlastic <<
-	//		" / St=" << storedSteel << std::endl;
+	//	std::cout << this->GetName() << ": Elapsed Time (" << diff << "s) - ";
+	//	std::cout << std::fixed << std::setprecision( 2 ) << 
+	//		"My storage is -> Al=" << percAluminum <<
+	//		" / El=" << percElectronics <<
+	//		" / Pl=" << percPlastic <<
+	//		" / St=" << percSteel << std::endl;
 	//	lastPrint = currTime;
 	//}
 
@@ -234,29 +249,17 @@ void cRobot::Update( double currTime, double timestep )
 	if( this->IsFull() )
 	{	
 		//std::cout << this->GetName() << ":I'm FULL!!!" << std::endl;
-		// TODO implement reproduction
-		//this.reproduce();
+		this->Reproduce();
 	}
-	else if( Is50PercFull() )
-	{
-		// TODO implement reproduction
-		//this.reproduce();
-
-		std::vector<std::string> vecParam;
-		//std::vector<std::string> vecResult;
-		bool result;
-
-		vecParam.push_back( "CreateRobot" );
-		vecParam.push_back( targetName );
-
-		result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
-
-	}
-
 	else
-	{
+	{	// If NOT FULL, life goes on as planned...
+		if( Is50PercFull() )
+		{  // Do I have enough to bring a child into this world?
+			this->Reproduce();
+		}
+
 		if( this->IsEmpty() )
-		{	// start count
+		{	// If EMPTY Start death count
 			if( firstEmpty == 0 )
 			{
 				firstEmpty = currTime;
@@ -264,13 +267,20 @@ void cRobot::Update( double currTime, double timestep )
 			else
 			{
 				if( currTime - firstEmpty >= 5.0 )
+				{
+					std::cout << std::fixed << std::setprecision( 2 ) << this->GetName() <<
+						": My storage is -> Al=" << this->GetPercent( "aluminum" ) <<
+						" / El=" << this->GetPercent( "electronics" ) <<
+						" / Pl=" << this->GetPercent( "plastic" ) <<
+						" / St=" << this->GetPercent( "steel" ) << std::endl;
+					std::cout << this->GetName() << ": I'm out of fuel for too long, goodbye world..." << std::endl;
+					
 					this->Destroy();
+				}
 			}
 		}
-		else
-		{
-			firstEmpty = 0;
-		}
+		// Not Empty anymore, restart the death count
+		else firstEmpty = 0;
 
 		// If any material is bellow 90%, try to find some
 		//if( lowestPerc <= 90.0f )
@@ -325,43 +335,43 @@ bool cRobot::Is50PercFull( void )
 void cRobot::SeekMaterial()
 {
 	// I NEED MATERIAL - Mediator help me find some ? (lowestMatStored)
-	//if( !this->isMoving )
-	//{
-	//std::cout << this->GetName() << ": I'm low on " << lowestMaterials[0].materialType << ", better look for some..." << std::endl;
-		//std::cout << this->GetName() << ": My storage is -> Al=" << storedAluminum <<
-		//												" / El=" << storedElectronics <<
-		//												" / Pl=" << storedPlastic <<
-		//												" / St=" << storedSteel << std::endl;
-		//std::cout << this->GetName() << ": Current Ccty. -> Al=" << percAluminum << "%" <<
-		//												" / El=" << percElectronics << "%" <<
-		//												" / Pl=" << percPlastic << "%" <<
-		//												" / St=" << percSteel << "%" << std::endl;
-	//}
-
 	glm::vec3 thePosition = this->GetPosition();
 
 	std::vector<std::string> vecParam;
-	//std::vector<std::string> vecResult;
 	bool result = false;
 
-	int index = 0;
-	while( !result )
+	// Look for just the lowest material stored
 	{
-		if( index != this->lowestMaterials.size() )
-		{
-			vecParam.clear();
-			vecParam.push_back( "FindClosestObjByType" );
-			vecParam.push_back( lowestMaterials[index].materialType );
+		vecParam.clear();
+		vecParam.push_back( "FindClosestObjByType" );
+		vecParam.push_back( lowestMaterials[0].materialType );
 
-			vecParam.push_back( std::to_string( thePosition.x ) );
-			vecParam.push_back( std::to_string( thePosition.y ) );
-			vecParam.push_back( std::to_string( thePosition.z ) );
+		vecParam.push_back( std::to_string( thePosition.x ) );
+		vecParam.push_back( std::to_string( thePosition.y ) );
+		vecParam.push_back( std::to_string( thePosition.z ) );
 
-			result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
-			index++;
-		}
-		else return;
+		result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
 	}
+
+	// Look for all materials from the lesser percentage to higher
+	//int index = 0;
+	//while( !result )
+	//{
+	//	if( index != this->lowestMaterials.size() )
+	//	{
+	//		vecParam.clear();
+	//		vecParam.push_back( "FindClosestObjByType" );
+	//		vecParam.push_back( lowestMaterials[index].materialType );
+
+	//		vecParam.push_back( std::to_string( thePosition.x ) );
+	//		vecParam.push_back( std::to_string( thePosition.y ) );
+	//		vecParam.push_back( std::to_string( thePosition.z ) );
+
+	//		result = this->m_pTheMediator->Mediate( ( iGameObject* )this, this->GetName(), vecParam );
+	//		index++;
+	//	}
+	//	else return;
+	//}
 
 	return;
 }
@@ -577,6 +587,20 @@ float cRobot::GetStored( std::string materialType )
 		return storedPlastic;
 	else if( materialType == "steel" )
 		return storedSteel;
+
+	return NULL;
+}
+
+float cRobot::GetPercent( std::string materialType )
+{
+	if( materialType == "aluminum" )
+		return percAluminum;
+	else if( materialType == "electronics" )
+		return percElectronics;
+	else if( materialType == "plastic" )
+		return percPlastic;
+	else if( materialType == "steel" )
+		return percSteel;
 
 	return NULL;
 }

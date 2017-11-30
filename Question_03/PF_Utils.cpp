@@ -61,6 +61,7 @@ void DumpGarbage( cFactory* pFactory, std::vector< iGameObject* > vecObjects )
 
 	numberOfalumiObjs = generateRandomNumber( 0, 50 );
 	numberOfsteelObjs = generateRandomNumber( 0, 25 );
+	//numberOfelectObjs = generateRandomNumber( 0, 25 );
 	numberOfelectObjs = generateRandomNumber( 0, 10 );
 	numberOfplastObjs = generateRandomNumber( 0, 100 );
 

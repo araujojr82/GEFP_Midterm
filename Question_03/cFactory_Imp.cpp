@@ -101,7 +101,8 @@ void cFactory_Imp::UpdateAllObjects(double currTime, double timestep)
 
 		if( pCurObj->GetType() == "robot" )
 		{
-			pCurObj->Update( currTime, timestep );
+			if( pCurObj->IsActive() )
+				pCurObj->Update( currTime, timestep );
 		}
 
     }//for ( int index = 0;
@@ -173,6 +174,12 @@ bool cFactory_Imp::Mediate( iGameObject* theActiveGO, std::string targetObj, std
 					theRobot->ConsumeMaterial( "plastic", tenPercPl );
 					theRobot->ConsumeMaterial( "steel", tenPercSt );
 
+					std::cout << std::fixed << std::setprecision( 2 ) << theRobot->GetName() <<
+						": My storage is -> Al=" << theRobot->GetPercent("aluminum") <<
+						" / El=" << theRobot->GetPercent( "electronics" ) <<
+						" / Pl=" << theRobot->GetPercent( "plastic" ) <<
+						" / St=" << theRobot->GetPercent( "steel" ) << std::endl;
+
 					theNewRobot->StoreMaterial( "aluminum", tenPercAl );
 					theNewRobot->StoreMaterial( "electronics", tenPercEl );
 					theNewRobot->StoreMaterial( "plastic", tenPercPl );
@@ -184,7 +191,7 @@ bool cFactory_Imp::Mediate( iGameObject* theActiveGO, std::string targetObj, std
 					theNewRobot->SetRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 					vec_pObjects.push_back( theNewRobot );
 
-					std::cout << theRobot->GetName() << ": I have created life! My son will be call " << theNewRobot->GetName() << std::endl;
+					std::cout << theRobot->GetName() << ": I have created life! My son will be called " << theNewRobot->GetName() << std::endl;
 
 					return true;
 				}

@@ -37,6 +37,7 @@ public:
 	bool IsFull( void );
 	bool IsEmpty( void );
 	bool Is50PercFull( void );
+	void Reproduce( void );
 	void SeekMaterial();
 	void CheckStorage();
 	void StoreMaterial( std::string materialType, float amount );
@@ -49,6 +50,7 @@ public:
 	float GetCapacity( std::string materialType );
 	float GetConsumeRate( std::string materialType );
 	float GetStored( std::string materialType );
+	float GetPercent( std::string materialType );
 
 	cGameObject* pMesh;
 
